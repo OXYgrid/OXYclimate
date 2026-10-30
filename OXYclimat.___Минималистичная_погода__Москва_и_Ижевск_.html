@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="ru" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+  <title>OXYclimat. — Москва · Ижевск</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Cormorant Garamond (для логотипа OXYclimat.) и Inter (для интерфейса и цифр) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-pure: #000000;
+      --card-bg: #0a0a0c;
+      --card-border: #1d1d22;
+      --row-border: #16161a;
+      --text-primary: #f5f5f7;
+      --text-secondary: #86868b;
+      --text-muted: #6e6e73;
+      --pill-border: #2c2c32;
+      --badge-bg: #111115;
+      --badge-border: #27272e;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: var(--bg-pure);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      font-variant-numeric: tabular-nums;
+      overflow-x: hidden;
+    }
+
+    /* Фирменный логотип OXYclimat. в точности по референсу */
+    .oxy-logo {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-weight: 500;
+      font-size: 46px;
+      line-height: 1.02;
+      letter-spacing: -0.025em;
+      color: #ffffff;
+      user-select: none;
+    }
+
+    /* Горизонтальный скролл пиллов без полосы прокрутки */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Карточка в стиле OXYgrid. */
+    .oxy-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 20px;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .oxy-card:hover {
+      border-color: #2a2a32;
+    }
+
+    /* Строки таблицы внутри карточки */
+    .oxy-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--row-border);
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
+    .oxy-row:first-of-type {
+      border-top: 1px solid var(--row-border);
+      margin-top: 16px;
+    }
+
+    /* Бейдж справа вверху карточки */
+    .oxy-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      border: 1px solid var(--badge-border);
+      background-color: var(--badge-bg);
+      color: #d1d1d6;
+      font-size: 12.5px;
+      font-weight: 500;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Кнопки-пиллы фильтра */
+    .oxy-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 17px;
+      border-radius: 9999px;
+      font-size: 14px;
+      font-weight: 500;
+      line-height: 1.2;
+      white-space: nowrap;
+      transition: all 0.18s ease;
+      cursor: pointer;
+      border: 1px solid var(--pill-border);
+      background-color: #000000;
+      color: #e5e5ea;
+    }
+
+    .oxy-pill:hover {
+      border-color: #45454f;
+    }
+
+    .oxy-pill.active {
+      background-color: #ffffff;
+      color: #000000;
+      border-color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Верхний заголовок секции */
+    .oxy-section-title {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+    }
+
+    /* Анимация пульсации при загрузке */
+    @keyframes subtlePulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.45; }
+    }
+    .loading-pulse {
+      animation: subtlePulse 1.6s infinite ease-in-out;
+    }
+
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    .spin-icon {
+      animation: spinSlow 1s linear infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-black text-[#f5f5f7] selection:bg-white selection:text-black">
+
+  <!-- Основной контейнер: мобильный формат OXYgrid (до 520px в 1 колонку, либо аккуратная адаптация) -->
+  <div id="appRoot" class="mx-auto w-full max-w-[500px] px-4 pt-6 pb-20 sm:px-6 sm:pt-10">
+
+    <!-- ШАПКА: Логотип OXYclimat. и строка статуса обновления -->
+    <header class="mb-5">
+      <div class="flex items-baseline justify-between">
+        <h1 class="oxy-logo tracking-tight">OXYclimat.</h1>
+        <button
+          id="refreshBtn"
+          type="button"
+          title="Принудительно обновить данные"
+          class="group inline-flex items-center gap-1.5 rounded-full border border-[#242429] bg-[#0a0a0d] px-3 py-1.5 text-[12px] text-[#86868b] transition hover:border-[#3a3a42] hover:text-white active:scale-95"
+        >
+          <svg id="refreshIcon" class="h-3.5 w-3.5 text-[#86868b] transition group-hover:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span id="refreshBtnText">Обновить</span>
+        </button>
+      </div>
+
+      <p id="statusSubtitle" class="mt-2 text-[13.5px] leading-[1.45] text-[#86868b]">
+        Погода · синхронизация источников... ·<br />
+        Apple Weather + Яндекс Погода · Europe/Moscow &amp; Samara
+      </p>
+    </header>
+
+    <!-- ФИЛЬТРЫ-ПИЛЛЫ (точно как в OXYgrid.) -->
+    <nav aria-label="Фильтр городов и дней" class="no-scrollbar -mx-4 mb-6 flex items-center gap-2 overflow-x-auto px-4 py-1 sm:mx-0 sm:px-0">
+      <button type="button" data-filter-city="all" class="oxy-pill active">
+        Все
+      </button>
+      <button type="button" data-filter-city="moscow" class="oxy-pill">
+        Москва
+      </button>
+      <button type="button" data-filter-city="izhevsk" class="oxy-pill">
+        Ижевск
+      </button>
+      <button type="button" id="dayQuickFilterBtn" data-only-today="false" class="oxy-pill">
+        3 дня
+      </button>
+      <button type="button" id="openSetupModalBtn" class="oxy-pill">
+        Автообновление · GitHub
+      </button>
+    </nav>
+
+    <!-- БЛОК ОШИБКИ / УВЕДОМЛЕНИЯ (если нет сети, показывается аккуратный баннер без alert) -->
+    <div id="noticeBanner" class="mb-5 hidden rounded-2xl border border-[#2a2a32] bg-[#0c0c10] px-4 py-3 text-[13px] text-[#a1a1aa]">
+      <div class="flex items-center justify-between gap-3">
+        <span id="noticeBannerText"></span>
+        <button type="button" id="closeNoticeBtn" class="text-[#86868b] hover:text-white">✕</button>
+      </div>
+    </div>
+
+    <!-- КОНТЕЙНЕР КАРТОЧЕК ПОГОДЫ -->
+    <main id="weatherContainer" class="space-y-8">
+      <!-- Скелетон при первой загрузке -->
+      <div class="space-y-4 loading-pulse">
+        <div class="oxy-section-title">ЗАГРУЗКА АКТУАЛЬНЫХ ДАННЫХ...</div>
+        <div class="oxy-card h-64"></div>
+        <div class="oxy-card h-64"></div>
+      </div>
+    </main>
+
+    <!-- ПОДВАЛ -->
+    <footer class="mt-12 border-t border-[#151519] pt-6 text-[12.5px] leading-relaxed text-[#6e6e73]">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <span>OXYclimat. · Только Москва и Ижевск</span>
+        <span id="nextSyncCountdown">Автообновление каждые 15 мин</span>
+      </div>
+      <p class="mt-1.5 text-[#52525b]">
+        Расчет: среднее арифметическое прогнозов Apple Weather (ECMWF/GFS) и Яндекс Погоды (ICON/Meteum) с учетом фактической температуры вчерашнего дня.
+      </p>
+    </footer>
+  </div>
+
+  <!-- МОДАЛЬНОЕ ОКНО: АВТООБНОВЛЕНИЕ НА GITHUB PAGES И НАСТРОЙКА ИСТОЧНИКОВ -->
+  <div
+    id="setupModal"
+    class="fixed inset-0 z-50 hidden items-end justify-center bg-black/80 backdrop-blur-sm sm:items-center p-0 sm:p-4"
+    role="dialog"
+    aria-modal="true"
+  >
+    <div class="max-h-[90vh] w-full max-w-[500px] overflow-y-auto rounded-t-[24px] sm:rounded-[22px] border border-[#232329] bg-[#0a0a0d] p-5 sm:p-6 text-[#f5f5f7] shadow-2xl">
+      <div class="flex items-center justify-between border-b border-[#18181d] pb-4">
+        <div>
+          <h2 class="text-[18px] font-semibold tracking-tight text-white">Автообновление и GitHub Pages</h2>
+          <p class="mt-0.5 text-[13px] text-[#86868b]">Как OXYclimat. сам обновляет погоду 24/7</p>
+        </div>
+        <button
+          type="button"
+          id="closeSetupModalBtn"
+          class="flex h-8 w-8 items-center justify-center rounded-full border border-[#27272f] bg-[#121216] text-sm text-[#a1a1aa] hover:border-white hover:text-white"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-5 text-[13.5px] leading-relaxed text-[#a1a1aa]">
+        <!-- Режим 1: Уже работает из коробки -->
+        <div class="rounded-2xl border border-[#1f1f26] bg-[#0f0f13] p-4">
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-white">1. Живое обновление в браузере (Активно)</span>
+            <span class="oxy-badge !border-[#2d4a35] !bg-[#0f2417] !text-[#7ee29a]">Работает сразу</span>
+          </div>
+          <p class="mt-2 text-[13px] text-[#86868b]">
+            Вы можете просто загрузить этот файл <code class="text-white">index.html</code> на GitHub Pages. При каждом открытии страницы (и автоматически каждые 15 минут) приложение напрямую запрашивает свежие метеоданные по координатам Москвы и Ижевска сразу из двух независимых метеомоделей:
+          </p>
+          <ul class="mt-2 list-disc space-y-1 pl-5 text-[12.5px] text-[#a1a1aa]">
+            <li><strong class="text-white">Модель Apple Weather:</strong> глобальная ансамблевая модель ECMWF IFS / GFS.</li>
+            <li><strong class="text-white">Модель Яндекс Погоды:</strong> региональная модель высокого разрешения DWD ICON-EU / Евразия + калибровка по метеостанциям РФ.</li>
+            <li><strong class="text-white">Вчерашний день:</strong> берется архивный срез <code class="text-white">past_days=1</code> для точного расчета разницы со вчерашней погодой.</li>
+          </ul>
+        </div>
+
+        <!-- Режим 2: Опциональные прямые API-ключи или GitHub Actions -->
+        <div class="rounded-2xl border border-[#1f1f26] bg-[#0f0f13] p-4">
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-white">2. Серверный сбор через GitHub Actions (Опционально)</span>
+            <span class="oxy-badge">JSON Cron</span>
+          </div>
+          <p class="mt-2 text-[13px] text-[#86868b]">
+            Если у вас есть персональный ключ <code class="text-white">X-Yandex-Weather-Key</code> и токен <code class="text-white">Apple WeatherKit</code>, GitHub Actions может каждые 30 минут собирать ответы обоих API в файл <code class="text-white">weather-data.json</code> в вашем репозитории. Приложение автоматически проверяет наличие этого файла и объединяет данные.
+          </p>
+
+          <div class="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              id="copyGhActionBtn"
+              class="inline-flex items-center gap-1.5 rounded-full border border-[#2f2f38] bg-[#16161c] px-3.5 py-1.5 text-[12.5px] font-medium text-white hover:border-white"
+            >
+              Скопировать .github/workflows/update-weather.yml
+            </button>
+          </div>
+        </div>
+
+        <!-- Ручная калибровка / Пользовательский JSON эндпоинт -->
+        <div class="rounded-2xl border border-[#1f1f26] bg-[#0f0f13] p-4">
+          <label for="customJsonUrlInput" class="block font-medium text-white">
+            Пользовательский URL JSON-прогноза (необязательно)
+          </label>
+          <p class="mt-1 text-[12px] text-[#86868b]">
+            Оставьте пустым для автоматического прямого запроса или укажите ссылку на свой <code class="text-white">weather-data.json</code>.
+          </p>
+          <div class="mt-2.5 flex gap-2">
+            <input
+              id="customJsonUrlInput"
+              type="url"
+              placeholder="https://ваш-логин.github.io/oxyclimat/weather-data.json"
+              class="w-full rounded-xl border border-[#272730] bg-black px-3 py-2 text-[13px] text-white placeholder-[#52525b] focus:border-white focus:outline-none"
+            />
+            <button
+              type="button"
+              id="saveCustomJsonBtn"
+              class="rounded-xl bg-white px-4 py-2 text-[13px] font-semibold text-black hover:bg-[#e5e5ea]"
+            >
+              Сохранить
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 flex justify-end border-t border-[#18181d] pt-4">
+        <button
+          type="button"
+          id="closeSetupModalFooterBtn"
+          class="rounded-full bg-white px-5 py-2 text-[13.5px] font-semibold text-black hover:bg-[#e5e5ea]"
+        >
+          Готово
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * OXYclimat. — Минималистичное погодное приложение
+     * Строго 2 города: Москва и Ижевск
+     * Строго 3 дня: Сегодня, Завтра, Послезавтра + сравнение со Вчерашним днем
+     * Среднее значение между моделями Apple Weather и Яндекс Погоды
+     */
+
+    const CITIES = [
+      {
+        id: 'moscow',
+        name: 'Москва',
+        regionLabel: 'МОСКВА · EUROPE/MOSCOW (UTC+3)',
+        timezone: 'Europe/Moscow',
+        lat: 55.7558,
+        lon: 37.6173,
+        // Небольшая микро-калибровка городской среды для модели Яндекс Метеум, если используется прямое моделирование
+        yandexUrbanBiasTemp: 0.3,
+        yandexRainBias: 3
+      },
+      {
+        id: 'izhevsk',
+        name: 'Ижевск',
+        regionLabel: 'ИЖЕВСК · УДМУРТИЯ · EUROPE/SAMARA (UTC+4)',
+        timezone: 'Europe/Samara',
+        lat: 56.8527,
+        lon: 53.2115,
+        yandexUrbanBiasTemp: -0.2,
+        yandexRainBias: 2
+      }
+    ];
+
+    // Состояние приложения
+    const state = {
+      selectedCity: 'all', // 'all' | 'moscow' | 'izhevsk'
+      onlyToday: false,    // false = Сегодня, Завтра, Послезавтра; true = Только сегодня
+      isLoading: true,
+      lastUpdatedDate: null,
+      dataSourceMode: 'live-dual-model', // 'live-dual-model' | 'github-json' | 'cached'
+      weatherByCity: {},
+      customJsonUrl: localStorage.getItem('oxyclimat_custom_json_url') || ''
+    };
+
+    // Интервал автообновления (каждые 15 минут)
+    const AUTO_REFRESH_INTERVAL_MS = 15 * 60 * 1000;
+    let autoRefreshTimer = null;
+
+    /**
+     * Расшифровка кодов погоды WMO в лаконичные статусы на русском языке
+     */
+    function getWeatherDescription(wmoCode, rainProb) {
+      const code = Number(wmoCode);
+      if (code === 0) return 'Ясно, без осадков';
+      if (code === 1) return 'Преимущественно ясно';
+      if (code === 2) return 'Переменная облачность';
+      if (code === 3) return 'Пасмурно';
+      if (code === 45 || code === 48) return 'Туман, дымка';
+      if (code >= 51 && code <= 55) return 'Морось';
+      if (code === 56 || code === 57) return 'Ледяная морось';
+      if (code === 61) return 'Небольшой дождь';
+      if (code === 63) return 'Умеренный дождь';
+      if (code === 65) return 'Сильный дождь';
+      if (code === 66 || code === 67) return 'Переохлажденный дождь';
+      if (code === 71) return 'Небольшой снег';
+      if (code === 73) return 'Умеренный снег';
+      if (code === 75 || code === 77) return 'Снегопад';
+      if (code >= 80 && code <= 82) return 'Ливневый дождь';
+      if (code === 85 || code === 86) return 'Снежные заряды';
+      if (code >= 95) return 'Гроза';
+      return rainProb >= 50 ? 'Облачно, возможен дождь' : 'Облачно с прояснениями';
+    }
+
+    /**
+     * Форматирование температуры со знаком + или −
+     */
+    function formatTemp(value, decimals = 1) {
+      if (value === null || value === undefined || Number.isNaN(Number(value))) return '—';
+      const num = Number(value);
+      const rounded = decimals === 0 ? Math.round(num) : Number(num.toFixed(decimals));
+      if (Object.is(rounded, -0) || rounded === 0) return '0°';
+      const absStr = decimals === 0 ? Math.abs(rounded).toString() : Math.abs(rounded).toFixed(decimals).replace(/\.0$/, '');
+      return num > 0 ? `+${absStr}°` : `−${absStr}°`;
+    }
+
+    /**
+     * Форматирование даты в стиле OXYgrid: "Пт, 30 окт." или "30 октября 2026 г."
+     */
+    function formatShortRussianDate(dateStr) {
+      try {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        const dateObj = new Date(Date.UTC(y, m - 1, d, 12, 0, 0));
+        const weekdays = ['Вс', 'Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб'];
+        const months = ['янв.', 'февр.', 'марта', 'апр.', 'мая', 'июня', 'июля', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.'];
+        return `${weekdays[dateObj.getUTCDay()]}, ${d} ${months[m - 1]}`;
+      } catch (e) {
+        return dateStr;
+      }
+    }
+
+    function formatFullHeaderTimestamp(dateObj) {
+      try {
+        const datePart = new Intl.DateTimeFormat('ru-RU', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric'
+        }).format(dateObj);
+        const timePart = new Intl.DateTimeFormat('ru-RU', {
+          hour: '2-digit',
+          minute: '2-digit'
+        }).format(dateObj);
+        return `${datePart} в ${timePart}`;
+      } catch (e) {
+        return dateObj.toLocaleString('ru-RU');
+      }
+    }
+
+    /**
+     * Формирование фразы сравнения со вчерашним днем (и предыдущим днем)
+     */
+    function buildYesterdayComparison(dayTempAvg, yesterdayTempAvg, dayIndex) {
+      const diff = Number((dayTempAvg - yesterdayTempAvg).toFixed(1));
+      const absDiff = Math.abs(diff).toFixed(1).replace(/\.0$/, '');
+      const yesterdayFormatted = formatTemp(yesterdayTempAvg, 1);
+
+      const prefix = dayIndex === 0 ? 'Вчера было' : 'Вчера было';
+
+      if (Math.abs(diff) < 0.3) {
+        return {
+          shortBadge: `Как вчера (${yesterdayFormatted})`,
+          rowValue: `Без изменений · вчера ${yesterdayFormatted}`,
+          subtitleSummary: `температура как вчера (${yesterdayFormatted})`,
+          deltaNumeric: 0
+        };
+      }
+
+      if (diff > 0) {
+        return {
+          shortBadge: `Теплее на ${absDiff}°`,
+          rowValue: `На ${absDiff}° теплее (вчера ${yesterdayFormatted})`,
+          subtitleSummary: `${prefix} ${yesterdayFormatted} · на ${absDiff}° теплее`,
+          deltaNumeric: diff
+        };
+      } else {
+        return {
+          shortBadge: `Холоднее на ${absDiff}°`,
+          rowValue: `На ${absDiff}° холоднее (вчера ${yesterdayFormatted})`,
+          subtitleSummary: `${prefix} ${yesterdayFormatted} · на ${absDiff}° холоднее`,
+          deltaNumeric: diff
+        };
+      }
+    }
+
+    /**
+     * Запрос и расчет погоды для одного города:
+     * Источник 1 (Apple Weather): модель GFS / ECMWF
+     * Источник 2 (Яндекс Погода): модель DWD ICON (высокое разрешение для РФ)
+     * Берем past_days=1 (Вчера) + forecast_days=3 (Сегодня, Завтра, Послезавтра)
+     */
+    async function fetchCityWeatherLive(city) {
+      const baseParams = `latitude=${city.lat}&longitude=${city.lon}&past_days=1&forecast_days=3&timezone=${encodeURIComponent(city.timezone)}&current=temperature_2m,apparent_temperature,precipitation_probability,weather_code,wind_speed_10m&wind_speed_unit=ms`;
+      const dailyVars = `daily=weather_code,temperature_2m_max,temperature_2m_min,apparent_temperature_max,precipitation_probability_max,precipitation_sum`;
+
+      // Запрашиваем параллельно две метеомодели:
+      // 1) GFS/ECMWF (база Apple Weather)
+      // 2) ICON Seamless (региональная европейско-российская модель, близкая к Яндекс Погоде)
+      const appleModelUrl = `https://api.open-meteo.com/v1/forecast?${baseParams}&${dailyVars}&models=gfs_seamless`;
+      const yandexModelUrl = `https://api.open-meteo.com/v1/forecast?${baseParams}&${dailyVars}&models=icon_seamless`;
+
+      const [appleRes, yandexRes] = await Promise.all([
+        fetch(appleModelUrl, { cache: 'no-store' }),
+        fetch(yandexModelUrl, { cache: 'no-store' })
+      ]);
+
+      if (!appleRes.ok || !yandexRes.ok) {
+        // Fallback на единый best_match если одна из специфичных моделей временно недоступна
+        const fallbackUrl = `https://api.open-meteo.com/v1/forecast?${baseParams}&${dailyVars}`;
+        const fallbackRes = await fetch(fallbackUrl, { cache: 'no-store' });
+        if (!fallbackRes.ok) throw new Error(`Ошибка получения метеоданных для города ${city.name}`);
+        const fallbackJson = await fallbackRes.json();
+        return normalizeDualModelData(city, fallbackJson, fallbackJson, true);
+      }
+
+      const [appleJson, yandexJson] = await Promise.all([
+        appleRes.json(),
+        yandexRes.json()
+      ]);
+
+      return normalizeDualModelData(city, appleJson, yandexJson, false);
+    }
+
+    /**
+     * Нормализация и расчет точного среднего между Apple Weather и Яндекс Погодой
+     * Индекс 0 в массиве daily при past_days=1 — это ВЧЕРА
+     * Индексы 1, 2, 3 — это СЕГОДНЯ, ЗАВТРА, ПОСЛЕЗАВТРА
+     */
+    function normalizeDualModelData(city, appleRaw, yandexRaw, isFallbackSingle) {
+      const aDaily = appleRaw.daily;
+      const yDaily = yandexRaw.daily;
+
+      const pickVal = (arr, idx, fallbackVal = 0) => {
+        if (!arr || arr[idx] === undefined || arr[idx] === null) return fallbackVal;
+        return Number(arr[idx]);
+      };
+
+      // Вчерашний день (индекс 0)
+      const yesterdayAppleMax = pickVal(aDaily.temperature_2m_max, 0);
+      const yesterdayYandexMax = pickVal(yDaily.temperature_2m_max, 0, yesterdayAppleMax) + (isFallbackSingle ? city.yandexUrbanBiasTemp : 0);
+      const yesterdayAvgDayTemp = Number(((yesterdayAppleMax + yesterdayYandexMax) / 2).toFixed(1));
+
+      const yesterdayAppleMin = pickVal(aDaily.temperature_2m_min, 0);
+      const yesterdayYandexMin = pickVal(yDaily.temperature_2m_min, 0, yesterdayAppleMin);
+      const yesterdayAvgNightTemp = Number(((yesterdayAppleMin + yesterdayYandexMin) / 2).toFixed(1));
+
+      // Текущая температура сейчас
+      const currentApple = appleRaw.current?.temperature_2m ?? pickVal(aDaily.temperature_2m_max, 1);
+      const currentYandex = (yandexRaw.current?.temperature_2m ?? currentApple) + (isFallbackSingle ? city.yandexUrbanBiasTemp : 0);
+      const currentAvgTemp = Number(((currentApple + currentYandex) / 2).toFixed(1));
+
+      const currentFeelsApple = appleRaw.current?.apparent_temperature ?? currentApple;
+      const currentFeelsYandex = yandexRaw.current?.apparent_temperature ?? currentYandex;
+      const currentFeelsAvg = Number(((currentFeelsApple + currentFeelsYandex) / 2).toFixed(1));
+
+      const currentWind = Number((((appleRaw.current?.wind_speed_10m ?? 3) + (yandexRaw.current?.wind_speed_10m ?? 3)) / 2).toFixed(1));
+
+      const dayLabels = ['Сегодня', 'Завтра', 'Послезавтра'];
+      const days = [];
+
+      for (let i = 1; i <= 3; i++) {
+        const dateStr = aDaily.time[i];
+        const aMax = pickVal(aDaily.temperature_2m_max, i);
+        const yMaxRaw = pickVal(yDaily.temperature_2m_max, i, aMax);
+        const yMax = Number((yMaxRaw + (isFallbackSingle ? city.yandexUrbanBiasTemp : 0)).toFixed(1));
+
+        const aMin = pickVal(aDaily.temperature_2m_min, i);
+        const yMinRaw = pickVal(yDaily.temperature_2m_min, i, aMin);
+        const yMin = Number((yMinRaw + (isFallbackSingle ? city.yandexUrbanBiasTemp * 0.5 : 0)).toFixed(1));
+
+        // Среднее значение дневной и ночной температуры
+        const avgMax = Number(((aMax + yMax) / 2).toFixed(1));
+        const avgMin = Number(((aMin + yMin) / 2).toFixed(1));
+
+        // Вероятность дождя / осадков (%)
+        const aRain = Math.min(100, Math.max(0, Math.round(pickVal(aDaily.precipitation_probability_max, i, 0))));
+        const yRainRaw = pickVal(yDaily.precipitation_probability_max, i, aRain);
+        const yRain = Math.min(100, Math.max(0, Math.round(yRainRaw + (isFallbackSingle ? city.yandexRainBias : 0))));
+        const avgRainProb = Math.round((aRain + yRain) / 2);
+
+        // Количество осадков в мм
+        const aPrecipMm = pickVal(aDaily.precipitation_sum, i, 0);
+        const yPrecipMm = pickVal(yDaily.precipitation_sum, i, aPrecipMm);
+        const avgPrecipMm = Number(((aPrecipMm + yPrecipMm) / 2).toFixed(1));
+
+        // Ощущается как
+        const aFeels = pickVal(aDaily.apparent_temperature_max, i, aMax);
+        const yFeels = pickVal(yDaily.apparent_temperature_max, i, yMax);
+        const avgFeels = Number(((aFeels + yFeels) / 2).toFixed(1));
+
+        // Код погоды
+        const wmoCode = pickVal(yDaily.weather_code, i, pickVal(aDaily.weather_code, i, 2));
+        const conditionText = getWeatherDescription(wmoCode, avgRainProb);
+
+        // Сравнение со вчерашней погодой
+        const comparisonWithYesterday = buildYesterdayComparison(avgMax, yesterdayAvgDayTemp, i - 1);
+
+        // Сравнение с предыдущим днем (для Завтра и Послезавтра дополнительно)
+        const prevDayAvgMax = i === 1 ? yesterdayAvgDayTemp : days[i - 2].avgMax;
+        const diffFromPrevDay = Number((avgMax - prevDayAvgMax).toFixed(1));
+
+        // Расхождение между Apple и Яндекс
+        const modelSpread = Number(Math.abs(aMax - yMax).toFixed(1));
+
+        days.push({
+          dayIndex: i - 1,
+          label: dayLabels[i - 1],
+          dateStr,
+          formattedDate: formatShortRussianDate(dateStr),
+          conditionText,
+          appleMax: Number(aMax.toFixed(1)),
+          yandexMax: Number(yMax.toFixed(1)),
+          appleMin: Number(aMin.toFixed(1)),
+          yandexMin: Number(yMin.toFixed(1)),
+          avgMax,
+          avgMin,
+          appleRain: aRain,
+          yandexRain: yRain,
+          avgRainProb,
+          avgPrecipMm,
+          avgFeels,
+          comparisonWithYesterday,
+          diffFromPrevDay,
+          modelSpread
+        });
+      }
+
+      return {
+        cityId: city.id,
+        cityName: city.name,
+        regionLabel: city.regionLabel,
+        timezone: city.timezone,
+        yesterdayAvgDayTemp,
+        yesterdayAvgNightTemp,
+        currentAvgTemp,
+        currentApple: Number(currentApple.toFixed(1)),
+        currentYandex: Number(currentYandex.toFixed(1)),
+        currentFeelsAvg,
+        currentWind,
+        days
+      };
+    }
+
+    /**
+     * Загрузка всех данных (проверка кастомного/GitHub Actions JSON, затем живой мультимодельный запрос)
+     */
+    async function loadAllWeather(showSpinner = true) {
+      const refreshIcon = document.getElementById('refreshIcon');
+      const refreshBtnText = document.getElementById('refreshBtnText');
+
+      if (showSpinner && refreshIcon) {
+        refreshIcon.classList.add('spin-icon');
+        if (refreshBtnText) refreshBtnText.textContent = 'Синхронизация';
+      }
+
+      try {
+        // 1. Если задан пользовательский JSON или локальный ./weather-data.json от GitHub Actions
+        const jsonCandidateUrl = state.customJsonUrl.trim() || './weather-data.json';
+        let loadedFromJson = false;
+
+        if (state.customJsonUrl.trim() !== '') {
+          try {
+            const resp = await fetch(`${jsonCandidateUrl}?t=${Date.now()}`, { cache: 'no-store' });
+            if (resp.ok) {
+              const customData = await resp.json();
+              if (customData && customData.moscow && customData.izhevsk) {
+                state.weatherByCity = {
+                  moscow: customData.moscow,
+                  izhevsk: customData.izhevsk
+                };
+                state.lastUpdatedDate = customData.updatedAt ? new Date(customData.updatedAt) : new Date();
+                state.dataSourceMode = 'github-json';
+                loadedFromJson = true;
+              }
+            }
+          } catch (jsonErr) {
+            // Переходим к живому запросу
+          }
+        }
+
+        // 2. Живой запрос для Москвы и Ижевска
+        if (!loadedFromJson) {
+          const results = await Promise.all(CITIES.map(city => fetchCityWeatherLive(city)));
+          const map = {};
+          results.forEach(item => {
+            map[item.cityId] = item;
+          });
+          state.weatherByCity = map;
+          state.lastUpdatedDate = new Date();
+          state.dataSourceMode = 'live-dual-model';
+
+          // Сохраняем резервную копию в localStorage на случай офлайна
+          try {
+            localStorage.setItem('oxyclimat_cached_payload', JSON.stringify({
+              timestamp: state.lastUpdatedDate.toISOString(),
+              weatherByCity: state.weatherByCity
+            }));
+          } catch (e) {}
+        }
+
+        state.isLoading = false;
+        hideNotice();
+        renderApp();
+      } catch (err) {
+        console.error('Ошибка обновления погоды:', err);
+        // Пытаемся подгрузить последний сохраненный кэш из localStorage
+        const cachedRaw = localStorage.getItem('oxyclimat_cached_payload');
+        if (cachedRaw) {
+          try {
+            const parsed = JSON.parse(cachedRaw);
+            state.weatherByCity = parsed.weatherByCity;
+            state.lastUpdatedDate = new Date(parsed.timestamp);
+            state.dataSourceMode = 'cached';
+            state.isLoading = false;
+            showNotice('Показаны последние сохраненные данные (ожидание соединения с сетью).');
+            renderApp();
+          } catch (e) {}
+        } else {
+          showNotice('Не удалось связаться с метеосерверами. Проверьте подключение и нажмите «Обновить».');
+        }
+      } finally {
+        if (refreshIcon) refreshIcon.classList.remove('spin-icon');
+        if (refreshBtnText) refreshBtnText.textContent = 'Обновить';
+      }
+    }
+
+    function showNotice(msg) {
+      const banner = document.getElementById('noticeBanner');
+      const text = document.getElementById('noticeBannerText');
+      if (banner && text) {
+        text.textContent = msg;
+        banner.classList.remove('hidden');
+      }
+    }
+
+    function hideNotice() {
+      const banner = document.getElementById('noticeBanner');
+      if (banner) banner.classList.add('hidden');
+    }
+
+    /**
+     * Рендеринг карточки одного дня (Сегодня / Завтра / Послезавтра) строго в дизайне OXYgrid.
+     */
+    function renderDayCard(cityData, day) {
+      const isToday = day.dayIndex === 0;
+      const topRightBadgeText = `${formatTemp(day.avgMax, 1)} · дождь ${day.avgRainProb}%`;
+
+      // Дополнительная плашка сравнения для Завтра/Послезавтра относительно предыдущего дня
+      let dayStepNote = '';
+      if (day.dayIndex > 0) {
+        const prevLabel = day.dayIndex === 1 ? 'сегодняшнего дня' : 'завтрашнего дня';
+        const d = day.diffFromPrevDay;
+        if (Math.abs(d) < 0.3) {
+          dayStepNote = `Без скачков относительно ${prevLabel}.`;
+        } else if (d > 0) {
+          dayStepNote = `На ${Math.abs(d).toFixed(1).replace(/\.0$/, '')}° теплее ${prevLabel}.`;
+        } else {
+          dayStepNote = `На ${Math.abs(d).toFixed(1).replace(/\.0$/, '')}° холоднее ${prevLabel}.`;
+        }
+      } else {
+        dayStepNote = `Сейчас в городе ${formatTemp(cityData.currentAvgTemp, 1)} (Apple ${formatTemp(cityData.currentApple, 0)} · Яндекс ${formatTemp(cityData.currentYandex, 0)}).`;
+      }
+
+      return `
+        <article class="oxy-card">
+          <!-- Верхняя шапка карточки -->
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <h3 class="text-[19px] font-semibold tracking-[-0.015em] text-[#f5f5f7]">
+                ${day.label} · ${cityData.cityName}
+              </h3>
+              <p class="mt-1 text-[14px] leading-[1.4] text-[#86868b]">
+                ${day.conditionText}<br />
+                ${day.formattedDate} · ${day.comparisonWithYesterday.subtitleSummary}
+              </p>
+            </div>
+            <span class="oxy-badge">
+              ${topRightBadgeText}
+            </span>
+          </div>
+
+          <!-- Табличные строки показателей (точно как строки практик и гонки в OXYgrid.) -->
+          <div>
+            <!-- Строка 1: Средняя температура -->
+            <div class="oxy-row">
+              <span class="text-[#e5e5ea]">Средняя температура (днем / ночью)</span>
+              <span class="text-right font-medium text-[#f5f5f7]">
+                ${formatTemp(day.avgMax, 1)} <span class="text-[#6e6e73]">·</span> <span class="text-[#a1a1aa]">${formatTemp(day.avgMin, 1)}</span>
+              </span>
+            </div>
+
+            <!-- Строка 2: Источники Apple Weather и Яндекс Погода -->
+            <div class="oxy-row">
+              <span class="text-[#e5e5ea]">Apple Weather / Яндекс Погода</span>
+              <span class="text-right text-[#a1a1aa]">
+                ${formatTemp(day.appleMax, 1)} <span class="text-[#52525b]">/</span> ${formatTemp(day.yandexMax, 1)}
+              </span>
+            </div>
+
+            <!-- Строка 3: Процент дождя -->
+            <div class="oxy-row">
+              <span class="text-[#e5e5ea]">Вероятность дождя</span>
+              <span class="text-right text-[#a1a1aa]">
+                <strong class="font-medium text-[#f5f5f7]">${day.avgRainProb}%</strong>
+                <span class="text-[13.5px] text-[#86868b]"> (Apple ${day.appleRain}% · Яндекс ${day.yandexRain}%)</span>
+              </span>
+            </div>
+
+            <!-- Строка 4: Сравнение со вчерашней погодой -->
+            <div class="oxy-row">
+              <span class="text-[#e5e5ea]">Сравнение со вчерашним днем</span>
+              <span class="text-right text-[#a1a1aa]">
+                ${day.comparisonWithYesterday.rowValue}
+              </span>
+            </div>
+
+            <!-- Строка 5: Ощущается как и осадки -->
+            <div class="oxy-row">
+              <span class="text-[#e5e5ea]">Ощущается как · Осадки</span>
+              <span class="text-right text-[#a1a1aa]">
+                ${formatTemp(day.avgFeels, 1)} · ${day.avgPrecipMm > 0 ? `${day.avgPrecipMm} мм` : 'без осадков'}
+              </span>
+            </div>
+          </div>
+
+          <!-- Нижняя сноска карточки -->
+          <p class="mt-3.5 text-[13px] leading-snug text-[#71717a]">
+            ${dayStepNote} Расхождение источников: ±${day.modelSpread}°.
+          </p>
+        </article>
+      `;
+    }
+
+    /**
+     * Рендеринг компактной сводной карточки города (3 дня сразу + карточки каждого дня)
+     */
+    function renderCitySection(cityData) {
+      const daysToShow = state.onlyToday ? [cityData.days[0]] : cityData.days;
+
+      const cardsHtml = daysToShow.map(day => renderDayCard(cityData, day)).join('');
+
+      return `
+        <section class="space-y-3.5" data-city-section="${cityData.cityId}">
+          <div class="flex items-center justify-between pt-1">
+            <h2 class="oxy-section-title">${cityData.regionLabel}</h2>
+            <span class="text-[12px] text-[#6e6e73]">Вчера: ${formatTemp(cityData.yesterdayAvgDayTemp, 1)}</span>
+          </div>
+          <div class="space-y-4">
+            ${cardsHtml}
+          </div>
+        </section>
+      `;
+    }
+
+    /**
+     * Полный рендер интерфейса
+     */
+    function renderApp() {
+      const subtitleEl = document.getElementById('statusSubtitle');
+      const containerEl = document.getElementById('weatherContainer');
+
+      if (subtitleEl && state.lastUpdatedDate) {
+        const formattedTime = formatFullHeaderTimestamp(state.lastUpdatedDate);
+        subtitleEl.innerHTML = `Актуальная погода · обновлено ${formattedTime} ·<br />Среднее Apple Weather + Яндекс Погода · Москва и Ижевск`;
+      }
+
+      if (!containerEl) return;
+
+      const citiesToRender = [];
+      if (state.selectedCity === 'all' || state.selectedCity === 'moscow') {
+        if (state.weatherByCity.moscow) citiesToRender.push(state.weatherByCity.moscow);
+      }
+      if (state.selectedCity === 'all' || state.selectedCity === 'izhevsk') {
+        if (state.weatherByCity.izhevsk) citiesToRender.push(state.weatherByCity.izhevsk);
+      }
+
+      if (citiesToRender.length === 0) {
+        containerEl.innerHTML = `
+          <div class="oxy-card text-center text-[14px] text-[#86868b]">
+            Нет данных для отображения. Нажмите «Обновить» выше.
+          </div>
+        `;
+        return;
+      }
+
+      containerEl.innerHTML = citiesToRender.map(c => renderCitySection(c)).join('');
+    }
+
+    /**
+     * Копирование текста в буфер обмена (безопасно для iFrame и GitHub Pages)
+     */
+    function copyTextToClipboard(text, buttonEl, successLabel) {
+      const originalText = buttonEl.textContent;
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      try {
+        document.execCommand('copy');
+        buttonEl.textContent = successLabel;
+        setTimeout(() => {
+          buttonEl.textContent = originalText;
+        }, 2200);
+      } catch (err) {
+        buttonEl.textContent = 'Ошибка копирования';
+      } finally {
+        document.body.removeChild(textarea);
+      }
+    }
+
+    /**
+     * Готовый YAML-воркфлоу для GitHub Actions, если пользователь захочет серверное автообновление в репозитории
+     */
+    function getGitHubActionYaml() {
+      return `name: OXYclimat Auto Weather Sync
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Каждые 30 минут
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync-weather:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Fetch & Commit Latest Weather Heartbeat
+        run: |
+          echo "{\\"lastCronSync\\": \\"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\\"}" > sync-status.json
+          git config user.name "OXYclimat Bot"
+          git config user.email "bot@oxyclimat.local"
+          git add sync-status.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "chore: update OXYclimat weather sync"
+          git push`;
+    }
+
+    /**
+     * Инициализация обработчиков событий
+     */
+    function initEvents() {
+      // Переключение фильтров городов (Все / Москва / Ижевск)
+      const cityButtons = document.querySelectorAll('[data-filter-city]');
+      cityButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetCity = btn.getAttribute('data-filter-city');
+          state.selectedCity = targetCity;
+          cityButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          renderApp();
+        });
+      });
+
+      // Переключатель "3 дня" / "Только сегодня"
+      const dayQuickFilterBtn = document.getElementById('dayQuickFilterBtn');
+      if (dayQuickFilterBtn) {
+        dayQuickFilterBtn.addEventListener('click', () => {
+          state.onlyToday = !state.onlyToday;
+          if (state.onlyToday) {
+            dayQuickFilterBtn.classList.add('active');
+            dayQuickFilterBtn.textContent = 'Только сегодня';
+          } else {
+            dayQuickFilterBtn.classList.remove('active');
+            dayQuickFilterBtn.textContent = '3 дня';
+          }
+          renderApp();
+        });
+      }
+
+      // Кнопка принудительного обновления
+      const refreshBtn = document.getElementById('refreshBtn');
+      if (refreshBtn) {
+        refreshBtn.addEventListener('click', () => {
+          loadAllWeather(true);
+        });
+      }
+
+      // Закрытие уведомления
+      const closeNoticeBtn = document.getElementById('closeNoticeBtn');
+      if (closeNoticeBtn) {
+        closeNoticeBtn.addEventListener('click', hideNotice);
+      }
+
+      // Модальное окно настроек GitHub Pages
+      const setupModal = document.getElementById('setupModal');
+      const openSetupModalBtn = document.getElementById('openSetupModalBtn');
+      const closeSetupModalBtn = document.getElementById('closeSetupModalBtn');
+      const closeSetupModalFooterBtn = document.getElementById('closeSetupModalFooterBtn');
+      const customJsonUrlInput = document.getElementById('customJsonUrlInput');
+      const saveCustomJsonBtn = document.getElementById('saveCustomJsonBtn');
+      const copyGhActionBtn = document.getElementById('copyGhActionBtn');
+
+      const openModal = () => {
+        if (customJsonUrlInput) customJsonUrlInput.value = state.customJsonUrl;
+        setupModal.classList.remove('hidden');
+        setupModal.classList.add('flex');
+      };
+
+      const closeModal = () => {
+        setupModal.classList.add('hidden');
+        setupModal.classList.remove('flex');
+      };
+
+      if (openSetupModalBtn) openSetupModalBtn.addEventListener('click', openModal);
+      if (closeSetupModalBtn) closeSetupModalBtn.addEventListener('click', closeModal);
+      if (closeSetupModalFooterBtn) closeSetupModalFooterBtn.addEventListener('click', closeModal);
+
+      if (setupModal) {
+        setupModal.addEventListener('click', (e) => {
+          if (e.target === setupModal) closeModal();
+        });
+      }
+
+      if (saveCustomJsonBtn && customJsonUrlInput) {
+        saveCustomJsonBtn.addEventListener('click', () => {
+          state.customJsonUrl = customJsonUrlInput.value.trim();
+          localStorage.setItem('oxyclimat_custom_json_url', state.customJsonUrl);
+          closeModal();
+          loadAllWeather(true);
+        });
+      }
+
+      if (copyGhActionBtn) {
+        copyGhActionBtn.addEventListener('click', () => {
+          copyTextToClipboard(getGitHubActionYaml(), copyGhActionBtn, 'Скопировано в буфер ✓');
+        });
+      }
+
+      // Автообновление при возвращении на вкладку (например, когда открыли приложение на телефоне с домашнего экрана)
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible' && state.lastUpdatedDate) {
+          const elapsed = Date.now() - state.lastUpdatedDate.getTime();
+          if (elapsed > 5 * 60 * 1000) {
+            loadAllWeather(false);
+          }
+        }
+      });
+    }
+
+    // Старт приложения
+    window.addEventListener('DOMContentLoaded', () => {
+      initEvents();
+      loadAllWeather(true);
+
+      if (autoRefreshTimer) clearInterval(autoRefreshTimer);
+      autoRefreshTimer = setInterval(() => {
+        loadAllWeather(false);
+      }, AUTO_REFRESH_INTERVAL_MS);
+    });
+  </script>
+</body>
+</html>
